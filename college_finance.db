@@ -1,0 +1,41 @@
+import sqlite3
+
+# Connect to SQLite (creates the file if it doesn't exist)
+conn = sqlite3.connect("college_finance.db")
+cursor = conn.cursor()
+
+# Create tables
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS Income (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    date TEXT,
+    source TEXT,
+    amount REAL,
+    status TEXT DEFAULT 'Pending'
+)
+""")
+
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS Expenditure (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    date TEXT,
+    department TEXT,
+    item TEXT,
+    amount REAL,
+    status TEXT DEFAULT 'Pending'
+)
+""")
+
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS Salary (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    date TEXT,
+    employee TEXT,
+    amount REAL,
+    status TEXT DEFAULT 'Pending'
+)
+""")
+
+conn.commit()
+conn.close()
+print(" Database and tables created successfully!")
