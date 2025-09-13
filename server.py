@@ -151,7 +151,8 @@ def general_dashboard():
             "remaining": cat.budget - spent
         })
     return render_template("general_dashboard.html", expenditures=expenditures)
-#--------------------------------------------------------
+
+# ------------------- FEEDBACK -------------------
 @app.route('/api/feedback', methods=['POST'])
 def feedback():
     data = request.get_json()
@@ -166,8 +167,44 @@ def logout():
     session.clear()
     return redirect(url_for('login'))
 
+# ------------------- CHATBOT API -------------------
+@app.route('/api/chat', methods=['POST'])
+def chat():
+    data = request.get_json()
+    question = data.get("question", "").lower()
+    answer = "Sorry, I could not understand your question."
+
+    categories = ExpenditureCategory.query.all()
+
+    # 1. Category-specific questions
+    for cat in categories:
+        if cat.name.lower() in question:
+            spent = db.session.query(func.sum(Finance.amount)).filter_by(category_id=cat.id).scalar() or 0
+            answer = f"{cat.name} budget: {cat.budget:,.2f}, Spent: {spent:,.2f}, Remaining: {cat.budget - spent:,.2f}"
+            break
+
+    # 2. Special queries
+    if "over budget" in question:
+        over = []
+        for cat in categories:
+            spent = db.session.query(func.sum(Finance.amount)).filter_by(category_id=cat.id).scalar() or 0
+            if spent > cat.budget:
+                over.append(cat.name)
+        answer = "Categories over budget: " + (", ".join(over) if over else "None")
+
+    if "all budget vs spent" in question:
+        all_info = []
+        for cat in categories:
+            spent = db.session.query(func.sum(Finance.amount)).filter_by(category_id=cat.id).scalar() or 0
+            all_info.append(f"{cat.name}: Budget={cat.budget:,.2f}, Spent={spent:,.2f}")
+        answer = "<br>".join(all_info)
+
+    return jsonify({"answer": answer})
+
 # ------------------- RUN -------------------
 if __name__ == "__main__":
     app.run(debug=True)
+
+
 
 
