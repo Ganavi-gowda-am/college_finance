@@ -3,13 +3,88 @@
 <head>
 <meta charset="UTF-8">
 <title>Login</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<style>
+    /* Full-page background with UVCE image */
+    html, body {
+        height: 100%;
+        margin: 0;
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: url('https://uvce.ac.in/img/slides/UVCE_Home9.jpg') no-repeat center center fixed;
+        background-size: cover;
+        position: relative;
+    }
+
+    /* Transparent overlay for better readability */
+    body::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background-color: rgba(0, 0, 0, 0.5); /* 50% dark overlay */
+        z-index: 0;
+    }
+
+    /* Centered login container */
+    .container {
+        position: relative;
+        z-index: 1; /* Above overlay */
+        background-color: rgba(255, 255, 255, 0.9); /* semi-transparent white */
+        padding: 30px 40px;
+        border-radius: 10px;
+        box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        width: 350px;
+        text-align: center;
+    }
+
+    .container h2 {
+        margin-bottom: 20px;
+        color: #333;
+    }
+
+    label {
+        display: block;
+        text-align: left;
+        margin-bottom: 5px;
+        color: #333;
+    }
+
+    input, select, button {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 15px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        font-size: 14px;
+    }
+
+    button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background-color: #0056b3;
+    }
+
+    .flash {
+        margin-bottom: 15px;
+        padding: 10px;
+        border-radius: 5px;
+    }
+
+    .flash.success { background-color: #d4edda; color: #155724; }
+    .flash.error { background-color: #f8d7da; color: #721c24; }
+</style>
 </head>
 <body>
-<header>
-    <h2>College Finance Dashboard Login</h2>
-</header>
 <div class="container">
+    <h2>UVCE Finance Dashboard Login</h2>
+
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             {% for category, message in messages %}
@@ -20,18 +95,18 @@
 
     <form method="post">
         <label>Username:</label>
-        <input type="text" name="username" required><br><br>
+        <input type="text" name="username" required>
 
         <label>Role:</label>
         <select name="role" id="role" onchange="togglePassword()">
             <option value="financer">Financer</option>
             <option value="principal">Principal</option>
             <option value="general">General</option>
-        </select><br><br>
+        </select>
 
         <div id="passwordDiv">
             <label>Password:</label>
-            <input type="password" name="password" id="password"><br><br>
+            <input type="password" name="password" id="password">
         </div>
 
         <button type="submit">Login</button>
@@ -42,17 +117,10 @@
 function togglePassword() {
     const role = document.getElementById('role').value;
     const passDiv = document.getElementById('passwordDiv');
-    if (role === 'general') {
-        passDiv.style.display = 'none';
-    } else {
-        passDiv.style.display = 'block';
-    }
+    passDiv.style.display = (role === 'general') ? 'none' : 'block';
 }
-// Initialize
 togglePassword();
 </script>
 </body>
 </html>
-
-
 
