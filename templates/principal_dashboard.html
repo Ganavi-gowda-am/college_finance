@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Principal Dashboard</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<header>
+    <h2>Principal Dashboard</h2>
+</header>
+<div class="container">
+    <h3>Set Total Government Fund</h3>
+    <input type="number" id="totalFundInput" placeholder="Enter Total Fund">
+    <button onclick="setTotalFund()">Set Fund</button>
+    <p id="fundMsg"></p>
+
+    <h3>All Expenditures</h3>
+    <input type="text" onkeyup="searchTable()" id="searchInput" placeholder="Search..">
+    <table id="expTable">
+        <thead>
+            <tr>
+                <th>Category</th>
+                <th>Budget</th>
+                <th>Spent</th>
+                <th>Remaining</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody id="expBody"></tbody>
+    </table>
+
+    <h3>Expenditure Chart</h3>
+    <canvas id="expChart"></canvas>
+</div>
+
+<script>
+function setTotalFund() {
+    let totalFund = parseFloat(document.getElementById("totalFundInput").value);
+    if (isNaN(totalFund) || totalFund <= 0) { alert("Enter a valid fund amount!"); return; }
+
+    fetch("/api/principal/set_fund", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ totalFund })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if(data.success) document.getElementById("fundMsg").innerText = data.message;
+        else alert(data.error || "Error setting fund");
+        fetchExpenditures(); // update table & chart after setting fund
+    });
+}
+
+function fetchExpenditures() {
+    fetch("/api/principal/view")
+        .then(res => res.json())
+        .then(data => {
+            const tbody = document.getElementById("expBody");
+            tbody.innerHTML = "";
+            const labels = [];
+            const spentData = [];
+            const remainingData = [];
+
+            data.forEach(exp => {
+                labels.push(exp.category);
+                spentData.push(exp.spent);
+                remainingData.push(exp.remaining);
+                tbody.innerHTML += `<tr>
+                    <td>${exp.category}</td>
+                    <td>${exp.budget.toLocaleString()}</td>
+                    <td>${exp.spent.toLocaleString()}</td>
+                    <td>${exp.remaining.toLocaleString()}</td>
+                    <td>${exp.status}</td>
+                </tr>`;
+            });
+            createChart(labels, spentData, remainingData);
+        });
+}
+
+function createChart(labels, spentData, remainingData) {
+    const ctx = document.getElementById("expChart").getContext("2d");
+    new Chart(ctx, {
+        type: "bar",
+        data: {
+            labels: labels,
+            datasets: [
+                { label: "Spent", data: spentData, backgroundColor: "rgba(75, 123, 236, 0.7)" },
+                { label: "Remaining", data: remainingData, backgroundColor: "rgba(46, 204, 113, 0.7)" }
+            ]
+        },
+        options: { responsive:true, scales: { y: { beginAtZero: true } } }
+    });
+}
+
+function searchTable() {
+    let input = document.getElementById("searchInput").value.toLowerCase();
+    let rows = document.getElementById("expTable").getElementsByTagName("tr");
+    for (let i = 1; i < rows.length; i++) {
+        let rowText = rows[i].innerText.toLowerCase();
+        rows[i].style.display = rowText.includes(input) ? "" : "none";
+    }
+}
+
+// fetch on page load
+fetchExpenditures();
+</script>
+</body>
+</html>

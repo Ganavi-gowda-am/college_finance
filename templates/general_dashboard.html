@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>General Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        h2 { text-align: center; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+        th { background-color: #f4f4f4; }
+        tr.over { background-color: #ffcccc; }
+        #searchBar { width: 100%; padding: 8px; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <h2>General Dashboard</h2>
+
+    <input type="text" id="searchBar" placeholder="Search by category name...">
+
+    <table id="expTable">
+        <thead>
+            <tr>
+                <th>Category</th>
+                <th>Budget Limit</th>
+                <th>Amount Spent</th>
+                <th>Remaining</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for exp in expenditures %}
+            <tr class="{% if exp.spent > exp.budget %}over{% endif %}">
+                <td>{{ exp.name }}</td>
+                <td>{{ "{:,.2f}".format(exp.budget) }}</td>
+                <td>{{ "{:,.2f}".format(exp.spent) }}</td>
+                <td>{{ "{:,.2f}".format(exp.remaining) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <script>
+        const searchInput = document.getElementById('searchBar');
+        const table = document.getElementById('expTable');
+        const rows = table.getElementsByTagName('tr');
+
+        searchInput.addEventListener('keyup', function() {
+            const filter = searchInput.value.toLowerCase();
+            for (let i = 1; i < rows.length; i++) {
+                const td = rows[i].getElementsByTagName('td')[0];
+                rows[i].style.display = td && td.textContent.toLowerCase().includes(filter) ? '' : 'none';
+            }
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Financer Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        h2 { text-align: center; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+        th { background-color: #f4f4f4; }
+        tr.over { background-color: #ffcccc; } /* Highlight overspent */
+        #searchBar { width: 100%; padding: 8px; margin-bottom: 10px; }
+        .flash { padding: 10px; margin-bottom: 10px; border-radius: 5px; }
+        .flash.success { background-color: #ccffcc; }
+        .flash.error { background-color: #ffcccc; }
+    </style>
+</head>
+<body>
+    <h2>Financer Dashboard</h2>
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- Search bar -->
+    <input type="text" id="searchBar" placeholder="Search by category name...">
+
+    <!-- Add expenditure form -->
+    <form method="POST">
+        <label>Category:</label>
+        <select name="category">
+            {% for cat in categories %}
+                <option value="{{ cat.id }}">{{ cat.name }}</option>
+            {% endfor %}
+        </select>
+        <label>Amount:</label>
+        <input type="number" name="amount" step="0.01" required>
+        <button type="submit">Add Expenditure</button>
+    </form>
+
+    <table id="expTable">
+        <thead>
+            <tr>
+                <th>Category</th>
+                <th>Budget Limit</th>
+                <th>Amount Spent</th>
+                <th>Remaining</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for exp in expenditures %}
+                <tr class="{% if exp.status == 'Over Spent' %}over{% endif %}">
+                    <td>{{ exp.name }}</td>
+                    <td>{{ exp.budget }}</td>
+                    <td>{{ exp.spent }}</td>
+                    <td>{{ exp.remaining }}</td>
+                    <td>{{ exp.status }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <script>
+        const searchInput = document.getElementById('searchBar');
+        const table = document.getElementById('expTable');
+        const rows = table.getElementsByTagName('tr');
+
+        searchInput.addEventListener('keyup', function() {
+            const filter = searchInput.value.toLowerCase();
+            for (let i = 1; i < rows.length; i++) { // skip header row
+                const td = rows[i].getElementsByTagName('td')[0];
+                if (td) {
+                    const txt = td.textContent.toLowerCase();
+                    rows[i].style.display = txt.includes(filter) ? '' : 'none';
+                }
+            }
+        });
+    </script>
+</body>
+</html>
+
+

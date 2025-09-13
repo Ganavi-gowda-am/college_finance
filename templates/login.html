@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Login</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<header>
+    <h2>College Finance Dashboard Login</h2>
+</header>
+<div class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash {{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form method="post">
+        <label>Username:</label>
+        <input type="text" name="username" required><br><br>
+
+        <label>Role:</label>
+        <select name="role" id="role" onchange="togglePassword()">
+            <option value="financer">Financer</option>
+            <option value="principal">Principal</option>
+            <option value="general">General</option>
+        </select><br><br>
+
+        <div id="passwordDiv">
+            <label>Password:</label>
+            <input type="password" name="password" id="password"><br><br>
+        </div>
+
+        <button type="submit">Login</button>
+    </form>
+</div>
+
+<script>
+function togglePassword() {
+    const role = document.getElementById('role').value;
+    const passDiv = document.getElementById('passwordDiv');
+    if (role === 'general') {
+        passDiv.style.display = 'none';
+    } else {
+        passDiv.style.display = 'block';
+    }
+}
+// Initialize
+togglePassword();
+</script>
+</body>
+</html>
+
+
+
