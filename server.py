@@ -107,7 +107,7 @@ def financer_dashboard():
 
     return render_template("financer_dashboard.html", expenditures=expenditures, categories=categories)
 
-# ------------------- PRINCIPAL DASHBOARD -------------------
+
 # ------------------- PRINCIPAL DASHBOARD -------------------
 @app.route('/principal_dashboard')
 def principal_dashboard():
@@ -151,6 +151,14 @@ def general_dashboard():
             "remaining": cat.budget - spent
         })
     return render_template("general_dashboard.html", expenditures=expenditures)
+#--------------------------------------------------------
+@app.route('/api/feedback', methods=['POST'])
+def feedback():
+    data = request.get_json()
+    feedback_text = data.get("feedback")
+    # For simplicity, just print or store in a DB table if needed
+    print(f"Feedback received: {feedback_text}")
+    return jsonify({"success": True, "message": "Thank you for your feedback!"})
 
 # ------------------- LOGOUT -------------------
 @app.route('/logout')
@@ -161,4 +169,5 @@ def logout():
 # ------------------- RUN -------------------
 if __name__ == "__main__":
     app.run(debug=True)
+
 
