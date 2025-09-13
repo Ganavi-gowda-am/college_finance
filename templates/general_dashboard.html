@@ -23,7 +23,7 @@
 
         #searchBar { width: 100%; padding: 8px; margin-bottom: 10px; }
 
-        /* Modal styling */
+        /* Feedback Modal styling */
         #feedbackModal {
             display:none; 
             position:fixed; 
@@ -44,6 +44,29 @@
         }
         #feedbackModal textarea { width:100%; margin-bottom:10px; }
         #feedbackModal span#closeModal { position:absolute; top:5px; right:10px; cursor:pointer; font-size:20px; }
+
+        /* Chatbot Panel styling */
+        #chatPanel {
+            display:none; 
+            position:fixed; 
+            bottom:80px; right:20px; 
+            width:320px; height:450px; 
+            background:#fff; 
+            border:1px solid #ccc; 
+            border-radius:8px; 
+            box-shadow:0 0 10px rgba(0,0,0,0.2); 
+            flex-direction:column; 
+            overflow:hidden; 
+            z-index:1001;
+        }
+        #chatPanel #chatHeader { 
+            background:#28a745; 
+            color:white; 
+            padding:10px; 
+        }
+        #chatPanel #chatHeader span { float:right; cursor:pointer; }
+        #chatBody { padding:10px; height:320px; overflow-y:auto; }
+        #chatPanel select, #chatPanel input, #chatPanel button { margin-bottom:5px; }
     </style>
 </head>
 <body>
@@ -84,12 +107,35 @@
         </div>
     </div>
 
+    <!-- Chatbot Button -->
+    <button id="chatBtn" style="position:fixed; bottom:20px; right:20px; padding:10px 20px; border-radius:8px; background:#28a745; color:white; border:none; cursor:pointer;">Chat</button>
+
+    <!-- Chatbot Panel -->
+    <div id="chatPanel">
+        <div id="chatHeader">Chat Helper <span id="closeChat">&times;</span></div>
+        <div id="chatBody"></div>
+
+        <!-- Dropdown for example questions -->
+        <select id="exampleQuestions" style="width:100%; padding:5px;">
+            <option value="">Select a question...</option>
+            <option value="Where did the professor budget go?">Where did the professor budget go?</option>
+            <option value="How much is spent on cleaning staff?">How much is spent on cleaning staff?</option>
+            <option value="Which categories are over budget?">Which categories are over budget?</option>
+            <option value="How much money is remaining in library budget?">How much money is remaining in library budget?</option>
+            <option value="Show all budget vs spent for all categories">Show all budget vs spent for all categories</option>
+        </select>
+
+        <div style="display:flex; padding:10px; border-top:1px solid #ccc;">
+            <input type="text" id="chatInput" placeholder="Ask a question..." style="flex:1; padding:5px;">
+            <button id="sendBtn" style="padding:5px 10px; margin-left:5px;">Send</button>
+        </div>
+    </div>
+
     <script>
         // Search functionality
         const searchInput = document.getElementById('searchBar');
         const table = document.getElementById('expTable');
         const rows = table.getElementsByTagName('tr');
-
         searchInput.addEventListener('keyup', function() {
             const filter = searchInput.value.toLowerCase();
             for (let i = 1; i < rows.length; i++) {
@@ -104,36 +150,67 @@
         const closeModal = document.getElementById('closeModal');
         const submitFeedback = document.getElementById('submitFeedback');
         const feedbackText = document.getElementById('feedbackText');
-
         feedbackBtn.addEventListener('click', () => feedbackModal.style.display = 'flex');
         closeModal.addEventListener('click', () => feedbackModal.style.display = 'none');
-
         submitFeedback.addEventListener('click', () => {
             const feedback = feedbackText.value.trim();
-            if(feedback === "") {
-                alert("Please enter feedback!");
-                return;
-            }
+            if(feedback === "") { alert("Please enter feedback!"); return; }
             fetch('/api/feedback', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ feedback })
             })
             .then(res => res.json())
-            .then(data => {
-                alert(data.message);
-                feedbackModal.style.display = 'none';
-                feedbackText.value = '';
-            })
+            .then(data => { alert(data.message); feedbackModal.style.display = 'none'; feedbackText.value = ''; })
             .catch(err => alert("Error submitting feedback!"));
         });
+        window.addEventListener('click', (e) => { if(e.target === feedbackModal) feedbackModal.style.display = 'none'; });
 
-        // Close modal on outside click
-        window.addEventListener('click', (e) => {
-            if(e.target === feedbackModal) feedbackModal.style.display = 'none';
-        });
+        // Chatbot functionality
+        const chatBtn = document.getElementById('chatBtn');
+        const chatPanel = document.getElementById('chatPanel');
+        const closeChat = document.getElementById('closeChat');
+        const chatBody = document.getElementById('chatBody');
+        const chatInput = document.getElementById('chatInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const exampleQuestions = document.getElementById('exampleQuestions');
+
+        chatBtn.addEventListener('click', () => chatPanel.style.display = 'flex');
+        closeChat.addEventListener('click', () => chatPanel.style.display = 'none');
+
+        function appendMessage(sender, message) {
+            const msgDiv = document.createElement('div');
+            msgDiv.style.margin = '5px 0';
+            msgDiv.style.textAlign = sender === 'user' ? 'right' : 'left';
+            msgDiv.innerHTML = `<strong>${sender}:</strong> ${message}`;
+            chatBody.appendChild(msgDiv);
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+
+        function sendMessage(question=null) {
+            const userQuestion = question || chatInput.value.trim();
+            if (!userQuestion) return;
+            appendMessage('user', userQuestion);
+            chatInput.value = '';
+            fetch('/api/chat', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ question: userQuestion })
+            })
+            .then(res => res.json())
+            .then(data => appendMessage('bot', data.answer))
+            .catch(err => appendMessage('bot', 'Error processing your request.'));
+        }
+
+        sendBtn.addEventListener('click', () => sendMessage());
+        chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+        exampleQuestions.addEventListener('change', () => { if (exampleQuestions.value) sendMessage(exampleQuestions.value); });
+
     </script>
 </body>
 </html>
+      
+
             
+
 
