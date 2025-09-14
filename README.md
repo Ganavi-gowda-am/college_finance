@@ -1,5 +1,4 @@
-# UVCE Finance Project
+# UVCE Finance Dashboard
 
-<p align="center">
-  <img src="https://i.ibb.co/1fswmkXW/your-image.png" alt="Project Screenshot" width="800"/>
-</p>
+## Login Page
+![Login Page](LoginPage.png)
